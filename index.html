@@ -132,6 +132,12 @@
         margin-bottom: 100px;
         display: flex;
       }
+
+      .item-image {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+      }
     </style>
 
     <script type="module">
@@ -139,12 +145,22 @@
       const $$ = (el) => document.querySelectorAll(el);
 
       const imageInput = $("#image-input");
-      const selectorItems = $("#selector-items");
+      const itemsSection = $("#selector-items");
 
       imageInput.addEventListener("change", (e) => {
         const [file] = e.target.files;
 
         if (file) {
+          const reader = new FileReader();
+
+          reader.onload = (eventReader) => {
+            const imgElement = document.createElement("img");
+            imgElement.src = eventReader.target.result;
+            imgElement.className = "item-image";
+
+            itemsSection.appendChild(imgElement);
+          };
+          reader.readAsDataURL(file);
         }
       });
     </script>
