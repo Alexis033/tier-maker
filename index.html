@@ -68,6 +68,12 @@
         display: flex;
         flex-direction: row;
         border-bottom: 1px solid #111;
+        transition: all 0.2s ease;
+
+        &.drag-over {
+          background: #555;
+          scale: 1.01;
+        }
       }
 
       .label {
@@ -131,12 +137,21 @@
         height: 100px;
         margin-bottom: 100px;
         display: flex;
+
+        transition: all 0.2s ease;
+
+        &.drag-over {
+          background: #555;
+          scale: 1.01;
+        }
       }
 
       .item-image {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+        background-color: #fff;
+        cursor: grab;
       }
     </style>
 
@@ -147,6 +162,19 @@
       const imageInput = $("#image-input");
       const itemsSection = $("#selector-items");
 
+      function createItem(src) {
+        const imgElement = document.createElement("img");
+        imgElement.draggable = true;
+        imgElement.src = src;
+        imgElement.className = "item-image";
+
+        imgElement.addEventListener("dragstart", handleDragStart);
+        imgElement.addEventListener("dragend", handleDragEnd);
+
+        itemsSection.appendChild(imgElement);
+        return imgElement;
+      }
+
       imageInput.addEventListener("change", (e) => {
         const [file] = e.target.files;
 
@@ -154,15 +182,70 @@
           const reader = new FileReader();
 
           reader.onload = (eventReader) => {
-            const imgElement = document.createElement("img");
-            imgElement.src = eventReader.target.result;
-            imgElement.className = "item-image";
-
-            itemsSection.appendChild(imgElement);
+            createItem(eventReader.target.result);
           };
           reader.readAsDataURL(file);
         }
       });
+
+      let draggedElement = null;
+      let sourceContainer = null;
+
+      const rows = $$(".tier .row");
+
+      rows.forEach((row) => {
+        row.addEventListener("drop", handleDrop);
+        row.addEventListener("dragover", handleDragOver);
+        row.addEventListener("dragleave", handleDragLeave);
+      });
+
+      itemsSection.addEventListener("drop", handleDrop);
+      itemsSection.addEventListener("dragover", handleDragOver);
+      itemsSection.addEventListener("dragleave", handleDragLeave);
+
+      function handleDrop(e) {
+        e.preventDefault();
+
+        const { currentTarget, dataTransfer } = e;
+
+        if (currentTarget === sourceContainer) return;
+
+        if (sourceContainer && draggedElement) {
+          sourceContainer.removeChild(draggedElement);
+        }
+        if (draggedElement) {
+          const src = dataTransfer.getData("text/plain");
+          const imgElement = createItem(src);
+
+          currentTarget.appendChild(imgElement);
+        }
+        currentTarget.classList.remove("drag-over");
+      }
+
+      function handleDragOver(e) {
+        e.preventDefault();
+        const { currentTarget, dataTransfer } = e;
+        if (currentTarget === sourceContainer) return;
+
+        currentTarget.classList.add("drag-over");
+      }
+
+      function handleDragLeave(e) {
+        e.preventDefault();
+        const { currentTarget } = e;
+        currentTarget.classList.remove("drag-over");
+      }
+
+      function handleDragStart(e) {
+        draggedElement = e.target;
+        sourceContainer = draggedElement.parentNode;
+        e.dataTransfer.setData("text/plain", draggedElement.src);
+      }
+
+      function handleDragEnd(e) {
+        draggedElement = null;
+        sourceContainer = null;
+      }
     </script>
   </head>
   <body>
@@ -232,7 +315,14 @@
             <path d="M9 12h6" />
             <path d="M12 9v6" />
           </svg>
-          <input id="image-input" type="file" name="" id="" hidden />
+          <input
+            accept="image/*"
+            id="image-input"
+            type="file"
+            name=""
+            id=""
+            hidden
+          />
         </label>
 
         <button class="button">
