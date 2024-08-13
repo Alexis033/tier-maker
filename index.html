@@ -152,6 +152,11 @@
         object-fit: cover;
         background-color: #fff;
         cursor: grab;
+
+        &.drag-preview {
+          opacity: 0.4;
+          pointer-events: none;
+        }
       }
     </style>
 
@@ -220,6 +225,7 @@
           currentTarget.appendChild(imgElement);
         }
         currentTarget.classList.remove("drag-over");
+        currentTarget.querySelector(".drag-preview")?.remove();
       }
 
       function handleDragOver(e) {
@@ -228,12 +234,21 @@
         if (currentTarget === sourceContainer) return;
 
         currentTarget.classList.add("drag-over");
+
+        const dragPreview = $(".drag-preview");
+
+        if (draggedElement && !dragPreview) {
+          const previewElement = draggedElement.cloneNode(true);
+          previewElement.classList.add("drag-preview");
+          currentTarget.appendChild(previewElement);
+        }
       }
 
       function handleDragLeave(e) {
         e.preventDefault();
         const { currentTarget } = e;
         currentTarget.classList.remove("drag-over");
+        currentTarget.querySelector(".drag-preview")?.remove();
       }
 
       function handleDragStart(e) {
