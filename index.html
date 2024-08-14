@@ -187,6 +187,7 @@
       const itemsSection = $("#selector-items");
       const resetTierButton = $(".reset-tier-button");
       const saveButton = $(".save-tier-button");
+      const saveLocalButton = $("#save-local-button");
 
       function createItem(src) {
         const imgElement = document.createElement("img");
@@ -214,9 +215,51 @@
         }
       }
 
+      function saveContent() {
+        const rows = $$(".row");
+        const dataTier = [];
+        const dataSelector = {};
+
+        const itemsContent = itemsSection.innerHTML;
+        dataSelector.content = itemsContent;
+
+        rows.forEach((row) => {
+          const labelContent = row.querySelector(".label span").textContent;
+          const rowContent = row.querySelector(".row-content").innerHTML;
+
+          dataTier.push({ label: labelContent, content: rowContent });
+        });
+
+        localStorage.setItem("tierData", JSON.stringify(dataTier));
+        localStorage.setItem("itemsContent", JSON.stringify(dataSelector));
+      }
+
+      function loadContent() {
+        const savedDataTier = localStorage.getItem("tierData");
+        const savedDataItems = localStorage.getItem("itemsContent");
+
+        if (savedDataTier || savedDataItems) {
+          const dataTier = JSON.parse(savedDataTier);
+          const dataItems = JSON.parse(savedDataItems);
+
+          const rows = document.querySelectorAll(".row");
+          const itemsSelector = document.querySelector("#selector-items");
+
+          itemsSelector.innerHTML = dataItems.content;
+
+          rows.forEach((row, index) => {
+            const labelSpan = row.querySelector(".label span");
+            const rowContent = row.querySelector(".row-content");
+
+            if (dataTier[index]) {
+              labelSpan.textContent = dataTier[index].label;
+              rowContent.innerHTML = dataTier[index].content;
+            }
+          });
+        }
+      }
       imageInput.addEventListener("change", (e) => {
         const { files } = e.target;
-        console.log("files", files);
 
         useFilesToCreateItems(files);
       });
@@ -264,7 +307,6 @@
         if (sourceContainer !== null) return;
 
         if (currentTarget === sourceContainer) return;
-        console.log(dataTransfer);
 
         if (dataTransfer.types.includes("Files")) {
           currentTarget.classList.add("drag-files");
@@ -353,6 +395,10 @@
           });
         });
       });
+
+      saveLocalButton.addEventListener("click", saveContent);
+
+      window.onload = loadContent;
     </script>
   </head>
   <body>
@@ -469,14 +515,35 @@
             stroke-width="1"
             stroke-linecap="round"
             stroke-linejoin="round"
-            class="icon icon-tabler icons-tabler-outline icon-tabler-device-floppy"
           >
             <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-            <path
-              d="M6 4h10l4 4v10a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2"
-            />
-            <path d="M12 14m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
-            <path d="M14 4l0 4l-6 0l0 -4" />
+            <path d="M7 19a2 2 0 0 1 -2 -2" />
+            <path d="M5 13v-2" />
+            <path d="M5 7a2 2 0 0 1 2 -2" />
+            <path d="M11 5h2" />
+            <path d="M17 5a2 2 0 0 1 2 2" />
+            <path d="M19 11v2" />
+            <path d="M19 17v4" />
+            <path d="M21 19h-4" />
+            <path d="M13 19h-2" />
+          </svg>
+        </button>
+        <button id="save-local-button" class="button">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path d="M12 6m-8 0a8 3 0 1 0 16 0a8 3 0 1 0 -16 0" />
+            <path d="M4 6v6a8 3 0 0 0 16 0v-6" />
+            <path d="M4 12v6a8 3 0 0 0 16 0v-6" />
           </svg>
         </button>
       </section>
